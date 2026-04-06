@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brain Tumor Detection System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --bg2: #0f1525;
+      --bg3: #151c30;
+      --border: rgba(99,179,237,0.12);
+      --border2: rgba(99,179,237,0.25);
+      --text: #e8edf5;
+      --text2: #8896a8;
+      --text3: #556070;
+      --accent: #4f9cf9;
+      --accent2: #2563eb;
+      --danger: #ef4444;
+      --danger-bg: rgba(239,68,68,0.1);
+      --danger-border: rgba(239,68,68,0.3);
+      --success: #22c55e;
+      --success-bg: rgba(34,197,94,0.1);
+      --success-border: rgba(34,197,94,0.3);
+      --warn: #f59e0b;
+      --warn-bg: rgba(245,158,11,0.08);
+      --warn-border: rgba(245,158,11,0.25);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,156,249,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,156,249,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 0.5rem;
+    }
+
+    .brain-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px rgba(59,130,246,0.3);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #e8edf5, #4f9cf9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text2);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .tech-badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text2);
+      letter-spacing: 0.03em;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 720px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    .dot.green { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .dot.red { background: var(--danger); box-shadow: 0 0 6px var(--danger); }
+    .dot.pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    /* Upload zone */
+    #drop-zone {
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      min-height: 220px;
+      text-align: center;
+      gap: 0.75rem;
+    }
+
+    #drop-zone:hover { background: var(--bg3); }
+    #drop-zone.drag { background: rgba(79,156,249,0.06); border-color: var(--accent); }
+
+    .upload-icon {
+      width: 56px;
+      height: 56px;
+      border: 1.5px dashed var(--border2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: border-color 0.2s;
+    }
+
+    #drop-zone:hover .upload-icon, #drop-zone.drag .upload-icon {
+      border-color: var(--accent);
+    }
+
+    .upload-title {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .upload-sub {
+      font-size: 0.8rem;
+      color: var(--text3);
+    }
+
+    .btn-upload {
+      background: var(--accent2);
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-upload:hover { background: #1d4ed8; }
+    .btn-upload:active { transform: scale(0.98); }
+
+    /* Image previews */
+    .img-wrapper {
+      padding: 1rem;
+      display: none;
+    }
+
+    .img-label {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .img-wrapper img, .img-wrapper canvas {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      display: block;
+    }
+
+    /* Results */
+    #result-panel { display: none; }
+
+    .verdict-row {
+      padding: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .verdict-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .verdict-icon.danger { background: var(--danger-bg); }
+    .verdict-icon.success { background: var(--success-bg); }
+
+    .verdict-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .verdict-title.danger { color: var(--danger); }
+    .verdict-title.success { color: var(--success); }
+
+    .verdict-sub {
+      font-size: 0.82rem;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .type-chip {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .type-chip.danger { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+    .type-chip.success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+
+    .details-grid {
+      padding: 0 1.25rem 1.25rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .detail-item {
+      background: var(--bg3);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+    }
+
+    .detail-item .label {
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+
+    .detail-item .value {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .confidence-bar {
+      background: var(--bg3);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      grid-column: span 2;
+    }
+
+    .bar-track {
+      height: 5px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #2563eb, #4f9cf9);
+      transition: width 1s ease;
+    }
+
+    .bar-fill.danger { background: linear-gradient(90deg, #b91c1c, #ef4444); }
+
+    .chars-section {
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    .char-tag {
+      display: inline-block;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: 12px;
+      color: var(--text2);
+      margin: 3px 3px 3px 0;
+    }
+
+    /* Scores chart */
+    .scores-section {
+      padding: 0 1.25rem 1.25rem;
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .score-label {
+      width: 90px;
+      color: var(--text2);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+    }
+
+    .score-track {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-fill { height: 100%; border-radius: 99px; }
+
+    .score-num {
+      width: 28px;
+      text-align: right;
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Loader */
+    #loader {
+      display: none;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .scanner-wrap {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1rem;
+    }
+
+    .scanner-ring {
+      width: 80px; height: 80px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .scanner-inner {
+      position: absolute;
+      inset: 14px;
+      border: 1.5px solid var(--border);
+      border-bottom-color: #4f9cf9;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite reverse;
+    }
+
+    .scanner-dot {
+      position: absolute;
+      inset: 0; margin: auto;
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-text {
+      color: var(--text2);
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .loader-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 1rem;
+      align-items: center;
+    }
+
+    .loader-step {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'JetBrains Mono', monospace;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .loader-step.active { opacity: 1; color: var(--accent); }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 1.5rem;
+    }
+
+    .disclaimer-icon { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+    .disclaimer p {
+      font-size: 0.8rem;
+      color: var(--warn);
+      line-height: 1.5;
+    }
+
+    .disclaimer strong { font-weight: 600; }
+
+    .reset-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      padding: 7px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      margin: 0 1.25rem 1.25rem;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Error */
+    #error-panel {
+      display: none;
+      padding: 1.25rem;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: var(--radius);
+      color: var(--danger);
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: var(--text3);
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    footer a { color: var(--text2); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-row">
+      <div class="brain-icon">🧠</div>
+      <h1>Brain Tumor Detection System</h1>
+    </div>
+    <p class="subtitle">Image Processing Project — Classical CV Pipeline</p>
+    <div class="tech-badges">
+      <span class="badge">OpenCV</span>
+      <span class="badge">NumPy</span>
+      <span class="badge">Otsu Thresholding</span>
+      <span class="badge">Morphological Ops</span>
+      <span class="badge">Watershed</span>
+      <span class="badge">Feature Extraction</span>
+    </div>
+  </header>
+
+  <div class="main-grid">
+
+    <!-- Upload + Preview -->
+    <div class="card">
+      <div class="card-header">
+        <div class="dot"></div>
+        MRI Input
+      </div>
+
+      <div id="drop-zone"
+           ondragover="event.preventDefault(); this.classList.add('drag')"
+           ondragleave="this.classList.remove('drag')"
+           ondrop="handleDrop(event)"
+           onclick="document.getElementById('file-input').click()">
+        <div class="upload-icon">📤</div>
+        <div class="upload-title">Drop MRI scan here</div>
+        <div class="upload-sub">JPG, PNG, TIFF, BMP supported<br>Axial, coronal or sagittal views</div>
+        <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Choose File</button>
+      </div>
+
+      <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleFile(this.files[0])" />
+
+      <div class="img-wrapper" id="orig-wrapper">
+        <div class="img-label">Original scan</div>
+        <img id="orig-img" alt="Original MRI" />
+      </div>
+
+      <div id="loader">
+        <div class="scanner-wrap">
+          <div class="scanner-ring"></div>
+          <div class="scanner-inner"></div>
+          <div class="scanner-dot"></div>
+        </div>
+        <div class="loader-text">Analyzing MRI...</div>
+        <div class="loader-steps">
+          <div class="loader-step" id="step1">→ preprocessing image</div>
+          <div class="loader-step" id="step2">→ skull stripping</div>
+          <div class="loader-step" id="step3">→ segmentation</div>
+          <div class="loader-step" id="step4">→ feature extraction</div>
+          <div class="loader-step" id="step5">→ classifying</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Result Image -->
+    <div class="card">
+      <div class="card-header">
+        <div class="dot" id="result-dot"></div>
+        Analysis overlay
+      </div>
+      <div style="padding: 1rem; min-height: 220px; display: flex; align-items: center; justify-content: center;">
+        <div id="placeholder-text" style="color: var(--text3); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; text-align: center; line-height: 2;">
+          upload an MRI scan<br>to begin analysis
+        </div>
+        <img id="result-img" alt="Detection result" style="width:100%; border-radius: var(--radius-sm); display:none;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Panel -->
+  <div id="result-panel">
+    <div class="main-grid">
+
+      <div class="card">
+        <div class="card-header">
+          <div class="dot" id="verdict-dot"></div>
+          Diagnosis
+        </div>
+        <div class="verdict-row">
+          <div class="verdict-icon" id="verdict-icon">⚠️</div>
+          <div>
+            <div class="verdict-title" id="verdict-title">Tumor Found</div>
+            <div class="verdict-sub" id="verdict-sub"></div>
+            <div class="type-chip" id="type-chip"></div>
+          </div>
+        </div>
+
+        <div class="details-grid" id="details-grid"></div>
+
+        <div class="chars-section" id="chars-section"></div>
+
+        <button class="reset-btn" onclick="reset()">↺ Analyze another scan</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="dot"></div>
+          Classification scores
+        </div>
+        <div class="scores-section" style="padding-top: 1rem;" id="scores-section"></div>
+
+        <div class="card-header" style="margin-top: 0.5rem; border-top: 1px solid var(--border);">
+          <div class="dot"></div>
+          Pipeline stages
+        </div>
+        <div style="padding: 1rem 1.25rem;">
+          <div class="score-row" style="margin-bottom: 10px;">
+            <span class="score-label">Preprocessing</span>
+            <div style="flex:1; font-size:11px; color: var(--text2);">CLAHE · Bilateral filter</div>
+            <span style="font-size:10px; color: var(--success); font-family: monospace;">✓</span>
+          </div>
+          <div class="score-row" style="margin-bottom: 10px;">
+            <span class="score-label">Skull strip</span>
+            <div style="flex:1; font-size:11px; color: var(--text2);">Otsu · Morphological ops</div>
+            <span style="font-size:10px; color: var(--success); font-family: monospace;">✓</span>
+          </div>
+          <div class="score-row" style="margin-bottom: 10px;">
+            <span class="score-label">Segmentation</span>
+            <div style="flex:1; font-size:11px; color: var(--text2);">Adaptive thresh · Contours</div>
+            <span style="font-size:10px; color: var(--success); font-family: monospace;">✓</span>
+          </div>
+          <div class="score-row" style="margin-bottom: 10px;">
+            <span class="score-label">Features</span>
+            <div style="flex:1; font-size:11px; color: var(--text2);">Circularity · Intensity · Location</div>
+            <span style="font-size:10px; color: var(--success); font-family: monospace;">✓</span>
+          </div>
+          <div class="score-row">
+            <span class="score-label">Classify</span>
+            <div style="flex:1; font-size:11px; color: var(--text2);">Rule-based scoring system</div>
+            <span style="font-size:10px; color: var(--success); font-family: monospace;">✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-panel"></div>
+
+  <div class="disclaimer">
+    <div class="disclaimer-icon">⚠️</div>
+    <p><strong>Academic project disclaimer:</strong> This system was developed as an Image Processing course project. Results are based on classical CV techniques and are <strong>not clinically validated</strong>. Do not use for actual medical diagnosis. Always consult a qualified radiologist.</p>
+  </div>
+
+  <footer>
+    <p>Brain Tumor Detection · Image Processing Project · Built with OpenCV + Flask</p>
+    <p style="margin-top: 4px;">
+      <a href="https://github.com/" target="_blank">GitHub</a> ·
+      Dataset: <a href="https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset" target="_blank">Kaggle Brain MRI Dataset</a>
+    </p>
+  </footer>
+
+</div>
+
+<script>
+const steps = ['step1','step2','step3','step4','step5'];
+let stepTimer;
+let stepIdx = 0;
+
+function startLoader() {
+  document.getElementById('loader').style.display = 'block';
+  stepIdx = 0;
+  steps.forEach(s => document.getElementById(s).classList.remove('active'));
+  stepTimer = setInterval(() => {
+    if (stepIdx < steps.length) {
+      document.getElementById(steps[stepIdx]).classList.add('active');
+      stepIdx++;
+    }
+  }, 500);
+}
+
+function stopLoader() {
+  clearInterval(stepTimer);
+  document.getElementById('loader').style.display = 'none';
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+}
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) {
+    showError('Please upload a valid image file.');
+    return;
+  }
+
+  reset(true);
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('orig-img').src = e.target.result;
+    document.getElementById('orig-wrapper').style.display = 'block';
+    document.getElementById('drop-zone').style.display = 'none';
+    startLoader();
+    uploadAndAnalyze(file);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function uploadAndAnalyze(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const resp = await fetch('/analyze', { method: 'POST', body: formData });
+    const data = await resp.json();
+    stopLoader();
+
+    if (data.error) { showError(data.error); return; }
+    showResults(data);
+  } catch (err) {
+    stopLoader();
+    showError('Server error. Make sure the Flask app is running.');
+  }
+}
+
+function showResults(data) {
+  // Show result image
+  document.getElementById('placeholder-text').style.display = 'none';
+  const rImg = document.getElementById('result-img');
+  rImg.src = 'data:image/png;base64,' + data.result_image;
+  rImg.style.display = 'block';
+
+  // Verdict
+  const isFound = data.tumor_found;
+  const verdictTitle = document.getElementById('verdict-title');
+  const verdictIcon = document.getElementById('verdict-icon');
+  const verdictSub = document.getElementById('verdict-sub');
+  const typeChip = document.getElementById('type-chip');
+  const verdictDot = document.getElementById('verdict-dot');
+  const resultDot = document.getElementById('result-dot');
+
+  if (isFound) {
+    verdictIcon.textContent = '⚠️';
+    verdictIcon.className = 'verdict-icon danger';
+    verdictTitle.textContent = 'Tumor Detected';
+    verdictTitle.className = 'verdict-title danger';
+    typeChip.textContent = data.tumor_type;
+    typeChip.className = 'type-chip danger';
+    verdictDot.className = 'dot red';
+    resultDot.className = 'dot red';
+  } else {
+    verdictIcon.textContent = '✓';
+    verdictIcon.className = 'verdict-icon success';
+    verdictTitle.textContent = 'No Tumor Found';
+    verdictTitle.className = 'verdict-title success';
+    typeChip.textContent = 'NORMAL';
+    typeChip.className = 'type-chip success';
+    verdictDot.className = 'dot green';
+    resultDot.className = 'dot green';
+  }
+
+  verdictSub.textContent = data.summary;
+
+  // Detail grid
+  const grid = document.getElementById('details-grid');
+  const details = isFound ? [
+    ['Type', data.tumor_type],
+    ['Grade', data.grade],
+    ['Location', data.location],
+    ['Size (est.)', data.size || 'N/A'],
+  ] : [
+    ['Status', 'Normal'],
+    ['Confidence', data.confidence + '%'],
+  ];
+
+  grid.innerHTML = details.map(([l, v]) => `
+    <div class="detail-item">
+      <div class="label">${l}</div>
+      <div class="value">${v}</div>
+    </div>
+  `).join('') + `
+    <div class="confidence-bar">
+      <div style="display:flex; justify-content:space-between;">
+        <div class="label">Detection confidence</div>
+        <div class="label" style="color: var(--text2);">${data.confidence}%</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill ${isFound ? 'danger' : ''}" style="width: ${data.confidence}%"></div>
+      </div>
+    </div>
+  `;
+
+  // Characteristics
+  const chars = document.getElementById('chars-section');
+  if (data.characteristics?.length) {
+    chars.innerHTML = '<div class="label" style="margin-bottom: 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-family: JetBrains Mono, monospace; color: var(--text3);">Observed characteristics</div>' +
+      data.characteristics.map(c => `<span class="char-tag">${c}</span>`).join('');
+  }
+
+  // Scores chart
+  const scoresDiv = document.getElementById('scores-section');
+  const scores = data.scores || {};
+  const types = ['Glioma', 'Meningioma', 'Pituitary', 'Metastatic'];
+  const colors = { Glioma: '#ef4444', Meningioma: '#f59e0b', Pituitary: '#4f9cf9', Metastatic: '#a855f7' };
+  const total = Object.values(scores).reduce((a, b) => a + b, 0) || 1;
+
+  if (isFound && Object.keys(scores).length) {
+    scoresDiv.innerHTML = types.map(t => {
+      const pct = Math.round(((scores[t] || 0) / total) * 100);
+      return `
+        <div class="score-row">
+          <div class="score-label">${t}</div>
+          <div class="score-track"><div class="score-fill" style="width:${pct}%; background:${colors[t]}; transition: width 1s ease;"></div></div>
+          <div class="score-num">${pct}%</div>
+        </div>`;
+    }).join('');
+  } else {
+    scoresDiv.innerHTML = '<div style="font-size: 12px; color: var(--text3); font-family: JetBrains Mono, monospace;">No tumor detected — scores N/A</div>';
+  }
+
+  document.getElementById('result-panel').style.display = 'block';
+  document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function showError(msg) {
+  const ep = document.getElementById('error-panel');
+  ep.innerHTML = `⚠️ ${msg}`;
+  ep.style.display = 'block';
+}
+
+function reset(keepUpload = false) {
+  document.getElementById('error-panel').style.display = 'none';
+  document.getElementById('result-panel').style.display = 'none';
+  if (!keepUpload) {
+    document.getElementById('drop-zone').style.display = 'flex';
+    document.getElementById('orig-wrapper').style.display = 'none';
+    document.getElementById('result-img').style.display = 'none';
+    document.getElementById('placeholder-text').style.display = 'block';
+    document.getElementById('file-input').value = '';
+    document.getElementById('result-dot').className = 'dot';
+  }
+}
+</script>
+</body>
+</html>
