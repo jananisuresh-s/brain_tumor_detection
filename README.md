@@ -74,7 +74,7 @@ Input MRI
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/brain-tumor-detection.git
+git clone https://github.com/jananisuresh-s/brain_tumor_detection.git
 cd brain-tumor-detection
 
 # 2. Create virtual environment (recommended)
@@ -143,12 +143,6 @@ These datasets include labeled Glioma, Meningioma, Pituitary, and Normal MRI sca
 
 ---
 
-## 🖥️ Screenshots
-
-> Upload an MRI → Get annotated result with tumor type, location, grade, and confidence.
-
----
-
 ## 📚 References
 
 1. Otsu, N. (1979). *A threshold selection method from gray-level histograms.* IEEE Transactions on Systems, Man, and Cybernetics.
@@ -169,9 +163,10 @@ These datasets include labeled Glioma, Meningioma, Pituitary, and Normal MRI sca
 
 ---
 
-## 👨‍💻 Author
+## 👩‍💻 Author
 
-Developed for **Image Processing** course project.
+**Janani Suresh**  
+- GitHub: [@jananisuresh-s](https://github.com/jananisuresh-s)
 
 ---
 
